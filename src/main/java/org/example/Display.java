@@ -1,12 +1,15 @@
 package org.example;
-import  javax.swing.*;
+import javax.swing.*;
+import java.io.File;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 
 public class Display extends JPanel implements KeyListener {
     private final Chip8 chip8;
     private static final int SCALE = 10;
+    private JFrame window;
 
     public Display(Chip8 chip8) {
         this.chip8 = chip8;
@@ -35,12 +38,45 @@ public class Display extends JPanel implements KeyListener {
     }
 
     public void createWindow() {
-        JFrame window = new JFrame("CHIP-8");
+        window = new JFrame("CHIP-8");
         window.add(this);
+        window.setJMenuBar(createMenuBar());
         window.pack();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
         window.setVisible(true);
+    }
+
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem openRom = new JMenuItem("Open ROM");
+        openRom.addActionListener(e -> {
+            try {
+                openRomDialog();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        fileMenu.add(openRom);
+        menuBar.add(fileMenu);
+        return menuBar;
+    }
+
+    private void openRomDialog() throws IOException {
+        JFileChooser chooser = new JFileChooser();
+        File romDir = new File("roms");
+        if (romDir.exists()) {
+            chooser.setCurrentDirectory(romDir);
+        }
+        int result = chooser.showOpenDialog(window);
+        if(result == JFileChooser.APPROVE_OPTION) {
+            File romFile = chooser.getSelectedFile();
+            chip8.reset();
+            chip8.loadRom(romFile.getAbsolutePath());
+            Main.romLoaded = true;
+            System.out.println("Selected ROM: " + romFile.getAbsolutePath());
+        }
     }
 
     private int mapKey(int keyCode) {

@@ -80,6 +80,11 @@ public class Chip8 {
         executeOpcode(opcode);
     }
 
+    public void reset() {
+        Main.romLoaded = false;
+        initialize();
+    }
+
     public void executeOpcode(int opcode) {
         //
         int firstNibble = opcode & 0xF000;
@@ -233,41 +238,40 @@ public class Chip8 {
             case 0x0003: // bitwise xor
                 V[x] = V[x] ^ V[y];
                 break;
-            case 0x0004: // adds Vy to Vx and stores in Vx with carry. Flag Vf set to 1 if a carry is triggered, 0 if not
-                V[x] += V[y];
-                if(V[x] > 255) {
-                    V[0xF] = 1;
-                } else {
-                    V[0xF] = 0;
-                }
-                V[x] &= 0xFF;
+            case 0x0004: { // adds Vy to Vx and stores in Vx with carry. Flag Vf set to 1 if a carry is triggered, 0 if not
+                int vx = V[x];
+                int vy = V[y];
+                int sum = vx + vy;
+                V[x] = sum & 0xFF;
+                V[0xF] = (sum > 255) ? 1 : 0;
                 break;
-            case 0x0005: // subtracts Vy from Vx and stores in Vx with underflow. Flag Vf set to 1 if Vx > Vy and there was no underflow, 0 if not
-                if(V[x] >= V[y]) {
-                    V[0xF] = 1;
-                } else {
-                    V[0xF] = 0;
-                }
-                V[x] -= V[y];
-                V[x] &= 0xFF;
+            }
+            case 0x0005: { // subtracts Vy from Vx and stores in Vx with underflow. Flag Vf set to 1 if Vx > Vy and there was no underflow, 0 if not
+                int vx = V[x];
+                int vy = V[y];
+                V[x] = (vx - vy) & 0xFF;
+                V[0xF] = (vx >= vy) ? 1 : 0;
                 break;
-            case 0x0007: // subtracts Vx from Vy and stores in Vx with underflow. Flag Vf set to 1 if Vy > Vx and there was no underflow, 0 if not
-                if(V[y] >= V[x]) {
-                    V[0xF] = 1;
-                } else {
-                    V[0xF] = 0;
-                }
-                V[x] = V[y] - V[x];
-                V[x] &= 0xFF;
+            }
+            case 0x0007: { // subtracts Vx from Vy and stores in Vx with underflow. Flag Vf set to 1 if Vy > Vx and there was no underflow, 0 if not
+                int vx = V[x];
+                int vy = V[y];
+                V[x] = (vy - vx) & 0xFF;
+                V[0xF] = (vy >= vx) ? 1 : 0;
                 break;
-            case 0x0006: // Shifts Vx to the right by one bit
-                V[0xF] = V[x] & 0x1;
-                V[x] >>= 1;
+            }
+            case 0x0006: { // Shifts Vx to the right by one bit
+                int vx = V[x];
+                V[0xF] = vx & 1;
+                V[x] = (vx >> 1) & 0xFF;
                 break;
-            case 0x000E: // Shifts Vx to the left by one bit
-                V[0xf] = (V[x] & 0x80) >> 7;
-                V[x] <<= 1;
+            }
+            case 0x000E: { // Shifts Vx to the left by one bit
+                int vx = V[x];
+                V[0xF] = (vx >> 7) & 1;
+                V[x] = (vx << 1) & 0xFF;
                 break;
+            }
                 /* Old behavior for bitshifts. Sets Vx to Vy, behavior is otherwise identical. Make a toggle.
             case 0x0006: // Shifts Vx to the right by one bit
                 V[x] = V[y];
