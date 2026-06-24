@@ -2,7 +2,6 @@ package org.example;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
-import java.awt.Toolkit;
 
 public class Chip8 {
     // 4096 bytes of memory
