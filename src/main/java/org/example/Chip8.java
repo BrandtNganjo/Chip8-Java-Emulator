@@ -260,15 +260,17 @@ public class Chip8 {
                 break;
             }
             case 0x0006: { // Shifts Vx to the right by one bit
-                int vx = V[x];
-                V[0xF] = vx & 1;
-                V[x] = (vx >> 1) & 0xFF;
+                int vy = V[y];
+                int flag = vy & 1;
+                V[x] = (vy >> 1) & 0xFF;
+                V[0xF] = flag;
                 break;
             }
             case 0x000E: { // Shifts Vx to the left by one bit
-                int vx = V[x];
-                V[0xF] = (vx >> 7) & 1;
-                V[x] = (vx << 1) & 0xFF;
+                int vy = V[y];
+                int flag = (vy >> 7) & 1;
+                V[x] = (vy << 1) & 0xFF;
+                V[0xF] = flag;
                 break;
             }
                 /* Old behavior for bitshifts. Sets Vx to Vy, behavior is otherwise identical. Make a toggle.
