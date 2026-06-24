@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.awt.FileDialog;
 
 public class Display extends JPanel implements KeyListener {
     private final Chip8 chip8;
@@ -64,14 +65,12 @@ public class Display extends JPanel implements KeyListener {
     }
 
     private void openRomDialog() throws IOException {
-        JFileChooser chooser = new JFileChooser();
-        File romDir = new File("roms");
-        if (romDir.exists()) {
-            chooser.setCurrentDirectory(romDir);
-        }
-        int result = chooser.showOpenDialog(window);
-        if(result == JFileChooser.APPROVE_OPTION) {
-            File romFile = chooser.getSelectedFile();
+        FileDialog dialog = new FileDialog(window, "Select ROM", FileDialog.LOAD);
+        dialog.setDirectory("roms");
+        dialog.setVisible(true);
+        String file = dialog.getFile();
+        if(file != null) {
+            File romFile = new File(dialog.getDirectory(), file);
             chip8.reset();
             chip8.loadRom(romFile.getAbsolutePath());
             Main.romLoaded = true;
